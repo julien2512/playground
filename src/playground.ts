@@ -86,6 +86,7 @@ let HIDABLE_CONTROLS = [
   ["Ratio train data", "percTrainData"],
   ["Noise level", "noise"],
   ["Batch size", "batchSize"],
+  ["Radius", "radius"],
   ["# of hidden layers", "numHiddenLayers"],
 ];
 
@@ -152,13 +153,13 @@ state.getHiddenProps().forEach(prop => {
 let boundary: {[id: string]: number[][]} = {};
 let selectedNodeId: string = null;
 // Plot the heatmap.
-let xDomain: [number, number] = [-6, 6];
+let xDomain: [number, number] = [-state.radius, state.radius];
 let heatMap =
     new HeatMap(300, DENSITY, xDomain, xDomain, d3.select("#heatmap"),
         {showAxes: true});
 let linkWidthScale = d3.scale.linear()
-  .domain([0, 5])
-  .range([1, 10])
+  .domain([0, state.radius])
+  .range([1, 2*state.radius])
   .clamp(true);
 let colorScale = d3.scale.linear<string>()
                      .domain([-1, 0, 1])
@@ -319,6 +320,15 @@ function makeGUI() {
   });
   batchSize.property("value", state.batchSize);
   d3.select("label[for='batchSize'] .value").text(state.batchSize);
+
+  let radius = d3.select("#radius").on("input", function() {
+    state.radius = this.value;
+    d3.select("label[for='radius'] .value").text(this.value);
+    parametersChanged = true;
+    reset();
+  });
+  radius.property("value", state.radius);
+  d3.select("label[for='radius'] .value").text(state.radius);
 
   let activationDropdown = d3.select("#activations").on("change", function() {
     state.activation = activations[this.value];
@@ -527,8 +537,8 @@ function drawNode(cx: number, cy: number, nodeId: string, isInput: boolean,
   if (isInput) {
     div.classed(activeOrNotClass, true);
   }
-  let nodeHeatMap = new HeatMap(RECT_SIZE, DENSITY / 10, xDomain,
-      xDomain, div, {noSvg: true});
+  let nodeHeatMap = new HeatMap(RECT_SIZE, DENSITY / 10, [-state.radius, state.radius],
+      [-state.radius, state.radius], div, {noSvg: true});
   div.datum({heatmap: nodeHeatMap, id: nodeId});
 
 }
@@ -996,10 +1006,10 @@ function drawDatasetThumbnails() {
     canvas.setAttribute("width", w);
     canvas.setAttribute("height", h);
     let context = canvas.getContext("2d");
-    let data = dataGenerator(200, 0);
+    let data = dataGenerator(200, 0, state.radius);
     data.forEach(function(d) {
       context.fillStyle = colorScale(d.label);
-      context.fillRect(w * (d.x + 6) / 12, h - h * (d.y + 6) / 12 - 4, 4, 4);
+      context.fillRect((w * (d.x+state.radius)) / (2*state.radius), h - (h * (d.y + state.radius)) / (2*state.radius), 4, 4);
     });
     d3.select(canvas.parentNode).style("display", null);
   }
@@ -1075,7 +1085,7 @@ function generateData(firstTime = false) {
       NUM_SAMPLES_REGRESS : NUM_SAMPLES_CLASSIFY;
   let generator = state.problem === Problem.CLASSIFICATION ?
       state.dataset : state.regDataset;
-  let data = generator(numSamples, state.noise / 100);
+  let data = generator(numSamples, state.noise / 100, state.radius);
   // Shuffle the data in-place.
   shuffle(data);
   // Split into train and test data.

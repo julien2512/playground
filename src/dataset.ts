@@ -48,9 +48,9 @@ export function shuffle(array: any[]): void {
   }
 }
 
-export type DataGenerator = (numSamples: number, noise: number) => Example2D[];
+export type DataGenerator = (numSamples: number, noise: number, radius: number) => Example2D[];
 
-export function classifyTwoGaussData(numSamples: number, noise: number):
+export function classifyTwoGaussData(numSamples: number, noise: number, radius: number):
     Example2D[] {
   let points: Example2D[] = [];
 
@@ -70,12 +70,11 @@ export function classifyTwoGaussData(numSamples: number, noise: number):
   return points;
 }
 
-export function regressArgMax(numSamples: number, noise: number):
+export function regressArgMax(numSamples: number, noise: number, radius: number):
   Example2D[] {
-  let radius = 6;
   let labelScale = d3.scale.linear()
-    .domain([-10, 10])
-    .range([-1, 1]);
+    .domain([-radius, radius])
+    .range([0, 1]);
   let getLabel = (x, y) => Math.max(x,y)==x?0:1;
 
   let points: Example2D[] = [];
@@ -88,12 +87,11 @@ export function regressArgMax(numSamples: number, noise: number):
   return points;
 }
 
-export function regressMaximum(numSamples: number, noise: number):
+export function regressMaximum(numSamples: number, noise: number, radius: number):
   Example2D[] {
-  let radius = 6;
   let labelScale = d3.scale.linear()
-    .domain([-10, 10])
-    .range([-1, 1]); 
+    .domain([-radius, radius])
+    .range([-radius, radius]); 
   let getLabel = (x, y) => Math.max(x,y);
 
   let points: Example2D[] = [];
@@ -106,11 +104,10 @@ export function regressMaximum(numSamples: number, noise: number):
   return points;
 }
 
-export function regressPlane(numSamples: number, noise: number):
+export function regressPlane(numSamples: number, noise: number, radius: number):
   Example2D[] {
-  let radius = 6;
   let labelScale = d3.scale.linear()
-    .domain([-10, 10])
+    .domain([-radius, radius])
     .range([-1, 1]);
   let getLabel = (x, y) => labelScale(x + y);
 
@@ -126,7 +123,7 @@ export function regressPlane(numSamples: number, noise: number):
   return points;
 }
 
-export function regressGaussian(numSamples: number, noise: number):
+export function regressGaussian(numSamples: number, noise: number, radius: number):
   Example2D[] {
   let points: Example2D[] = [];
 
@@ -155,7 +152,6 @@ export function regressGaussian(numSamples: number, noise: number):
     });
     return label;
   }
-  let radius = 6;
   for (let i = 0; i < numSamples; i++) {
     let x = randUniform(-radius, radius);
     let y = randUniform(-radius, radius);
@@ -167,7 +163,7 @@ export function regressGaussian(numSamples: number, noise: number):
   return points;
 }
 
-export function classifySpiralData(numSamples: number, noise: number):
+export function classifySpiralData(numSamples: number, noise: number, radius: number):
     Example2D[] {
   let points: Example2D[] = [];
   let n = numSamples / 2;
@@ -187,10 +183,9 @@ export function classifySpiralData(numSamples: number, noise: number):
   return points;
 }
 
-export function classifyCircleData(numSamples: number, noise: number):
+export function classifyCircleData(numSamples: number, noise: number, radius: number):
     Example2D[] {
   let points: Example2D[] = [];
-  let radius = 5;
   function getCircleLabel(p: Point, center: Point) {
     return (dist(p, center) < (radius * 0.5)) ? 1 : -1;
   }
@@ -221,7 +216,7 @@ export function classifyCircleData(numSamples: number, noise: number):
   return points;
 }
 
-export function classifyXORData(numSamples: number, noise: number):
+export function classifyXORData(numSamples: number, noise: number, radius: number):
     Example2D[] {
   function getXORLabel(p: Point) { return p.x * p.y >= 0 ? 1 : -1; }
 
